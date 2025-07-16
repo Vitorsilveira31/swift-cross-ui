@@ -6,6 +6,7 @@ extension UIKitBackend {
         let controller: UIAlertController
         var handler: ((Int) -> Void)?
 
+        @MainActor
         init() {
             self.controller = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
         }
@@ -15,6 +16,7 @@ extension UIKitBackend {
         Alert()
     }
 
+    @MainActor
     public func updateAlert(
         _ alert: Alert,
         title: String,
@@ -33,6 +35,7 @@ extension UIKitBackend {
         }
     }
 
+    @MainActor
     public func showAlert(
         _ alert: Alert,
         window: Window?,
@@ -47,6 +50,7 @@ extension UIKitBackend {
         window.rootViewController!.present(alert.controller, animated: false)
     }
 
+    @MainActor 
     public func dismissAlert(_ alert: Alert, window: Window?) {
         alert.controller.dismiss(animated: false)
     }

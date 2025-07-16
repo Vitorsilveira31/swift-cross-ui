@@ -3,6 +3,7 @@ import Foundation
 /// The environment used when constructing scenes and views. Each scene or view
 /// gets to modify the environment before passing it on to its children, which
 /// is the basis of many view modifiers.
+@MainActor
 public struct EnvironmentValues {
     /// The current stack orientation. Inherited by ``ForEach`` and ``Group`` so
     /// that they can be used without affecting layout.

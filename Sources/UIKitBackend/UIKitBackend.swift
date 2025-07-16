@@ -2,13 +2,13 @@ import SwiftCrossUI
 import UIKit
 
 public final class UIKitBackend: AppBackend {
-    static var onBecomeActive: (() -> Void)?
-    static var onReceiveURL: ((URL) -> Void)?
-    static var queuedURLs: [URL] = []
+    @MainActor static var onBecomeActive: (() -> Void)?
+    @MainActor static var onReceiveURL: ((URL) -> Void)?
+    @MainActor static var queuedURLs: [URL] = []
 
     /// The first window to get created.
-    static var mainWindow: UIWindow?
-    static var hasReturnedAWindow = false
+    @MainActor static var mainWindow: UIWindow?
+    @MainActor static var hasReturnedAWindow = false
 
     public let scrollBarWidth = 0
     public let defaultPaddingAmount = 15
@@ -42,7 +42,7 @@ public final class UIKitBackend: AppBackend {
         }
     }
 
-    var onTraitCollectionChange: (() -> Void)?
+    @MainActor var onTraitCollectionChange: (() -> Void)?
 
     private let appDelegateClass: ApplicationDelegate.Type
 
@@ -54,30 +54,37 @@ public final class UIKitBackend: AppBackend {
         self.appDelegateClass = appDelegateClass
     }
 
-    public func runMainLoop(
-        _ callback: @escaping @MainActor () -> Void
-    ) {
-        Self.onReceiveURL = { url in
-            Self.queuedURLs.append(url)
+    nonisolated public func runMainLoop(_ callback: @Sendable @escaping () -> Void) {
+        Task {
+            await MainActor.run {
+                Self.onReceiveURL = { url in
+                    Self.queuedURLs.append(url)
+                }
+                Self.onBecomeActive = callback
+                UIApplicationMain(
+                    CommandLine.argc,
+                    CommandLine.unsafeArgv,
+                    NSStringFromClass(UIApplication.self),
+                    NSStringFromClass(appDelegateClass)
+                )
+            }
         }
-        Self.onBecomeActive = callback
-        UIApplicationMain(
-            CommandLine.argc,
-            CommandLine.unsafeArgv,
-            NSStringFromClass(UIApplication.self),
-            NSStringFromClass(appDelegateClass)
-        )
     }
 
-    public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
+    public func setIncomingURLHandler(to action: @Sendable @escaping (URL) -> Void) {
         // If the app wasn't already open, URLs can arrive before the view graph
         // gets a chance to register a handler. To fix this we store any early
         // URLs and replay them when the register gets added.
         runInMainThread {
-            for url in Self.queuedURLs {
-                action(url)
+            let localAction = action
+            Task {
+                await MainActor.run {
+                    for url in Self.queuedURLs {
+                        localAction(url)
+                    }
+                    Self.queuedURLs = []
+                }
             }
-            Self.queuedURLs = []
         }
 
         Self.onReceiveURL = action
@@ -119,7 +126,7 @@ public final class UIKitBackend: AppBackend {
         // TODO: Notify when window scale factor changes
     }
 
-    public func runInMainThread(action: @escaping @MainActor () -> Void) {
+    nonisolated public func runInMainThread(action: @Sendable @escaping () -> Void) {
         DispatchQueue.main.async(execute: action)
     }
 

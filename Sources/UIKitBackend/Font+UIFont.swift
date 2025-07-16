@@ -2,7 +2,7 @@ import SwiftCrossUI
 import UIKit
 
 extension Font.Resolved {
-    var uiFont: UIFont {
+    @MainActor var uiFont: UIFont {
         switch identifier.kind {
             case .system:
                 let weight: UIFont.Weight =

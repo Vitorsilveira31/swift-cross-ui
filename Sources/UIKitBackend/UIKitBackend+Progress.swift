@@ -9,10 +9,12 @@ final class ProgressSpinner: WrapperWidget<UIActivityIndicatorView> {
 }
 
 extension UIKitBackend {
+    @MainActor
     public func createProgressSpinner() -> Widget {
         ProgressSpinner()
     }
 
+    @MainActor
     public func createProgressBar() -> Widget {
         let style: UIProgressView.Style
         #if os(tvOS)
@@ -23,6 +25,7 @@ extension UIKitBackend {
         return WrapperWidget(child: UIProgressView(progressViewStyle: style))
     }
 
+    @MainActor
     public func updateProgressBar(
         _ widget: Widget,
         progressFraction: Double?,

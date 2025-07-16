@@ -182,8 +182,8 @@ final class ControllerRepresentingWidget<Representable: UIViewControllerRepresen
     }
 
     deinit {
-        if let context {
-            Representable.dismantleUIViewController(subcontroller, coordinator: context.coordinator)
-        }
+//        if let context {
+//            Representable.dismantleUIViewController(subcontroller, coordinator: context.coordinator)
+//        }
     }
 }

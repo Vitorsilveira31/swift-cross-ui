@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.2
 
 import CompilerPluginSupport
 import Foundation
@@ -11,18 +11,20 @@ if let version = getGtk4MinorVersion(), version >= 10 {
     gtkSwiftSettings.append(.define("GTK_4_10_PLUS"))
 }
 
-let defaultBackend: String
-if let backend = ProcessInfo.processInfo.environment["SCUI_DEFAULT_BACKEND"] {
-    defaultBackend = backend
-} else {
-    #if os(macOS)
-        defaultBackend = "AppKitBackend"
-    #elseif os(Windows)
-        defaultBackend = "WinUIBackend"
-    #else
-        defaultBackend = "GtkBackend"
-    #endif
-}
+let defaultBackend: String = "WasiBackend"
+// if let backend = ProcessInfo.processInfo.environment["SCUI_DEFAULT_BACKEND"] {
+//     defaultBackend = backend
+// } else {
+//     #if os(WASI)
+//         defaultBackend = "WasiBackend"
+//     #elseif os(macOS)
+//         defaultBackend = "AppKitBackend"
+//     #elseif os(Windows)
+//         defaultBackend = "WinUIBackend"
+//     #else
+//         defaultBackend = "GtkBackend"
+//     #endif
+// }
 
 let hotReloadingEnabled: Bool
 #if os(Windows)
@@ -61,15 +63,16 @@ switch ProcessInfo.processInfo.environment["SCUI_LIBRARY_TYPE"] {
 
 let package = Package(
     name: "swift-cross-ui",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13), .visionOS(.v1)],
+    platforms: [.macOS("15.4"), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13), .visionOS(.v1)],
     products: [
         .library(name: "SwiftCrossUI", type: libraryType, targets: ["SwiftCrossUI"]),
-        .library(name: "AppKitBackend", type: libraryType, targets: ["AppKitBackend"]),
+        .library(name: "AppKitBackend", type: .static, targets: ["AppKitBackend"]),
         .library(name: "GtkBackend", type: libraryType, targets: ["GtkBackend"]),
         .library(name: "Gtk3Backend", type: libraryType, targets: ["Gtk3Backend"]),
         .library(name: "WinUIBackend", type: libraryType, targets: ["WinUIBackend"]),
         .library(name: "DefaultBackend", type: libraryType, targets: ["DefaultBackend"]),
         .library(name: "UIKitBackend", type: libraryType, targets: ["UIKitBackend"]),
+        .library(name: "WasiBackend", type: .static, targets: ["WasiBackend"]),
         .library(name: "Gtk", type: libraryType, targets: ["Gtk"]),
         .library(name: "Gtk3", type: libraryType, targets: ["Gtk3"]),
         .executable(name: "GtkExample", targets: ["GtkExample"]),
@@ -91,8 +94,7 @@ let package = Package(
             from: "600.0.0"
         ),
         .package(
-            url: "https://github.com/stackotter/swift-macro-toolkit",
-            .upToNextMinor(from: "0.6.0")
+            path: "./External/swift-macro-toolkit"
         ),
         .package(
             url: "https://github.com/stackotter/swift-image-formats",
@@ -122,13 +124,54 @@ let package = Package(
         //     url: "https://github.com/Longhanks/qlift",
         //     revision: "ddab1f1ecc113ad4f8e05d2999c2734cdf706210"
         // ),
+        .package(
+            url: "https://github.com/swiftlang/swift-foundation.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/OpenCombine/OpenCombine.git",
+            from: "0.14.0"
+        ),
+        .package(
+            url: "https://github.com/swiftwasm/JavaScriptKit.git",
+            from: "0.31.1"
+        ),
     ],
     targets: [
         .target(
+            name: "Foundation",
+            dependencies: [
+                .product(
+                    name: "FoundationEssentials",
+                    package: "swift-foundation",
+                    condition: .when(platforms: [.wasi])
+                )
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
+        ),
+        .target(
             name: "SwiftCrossUI",
             dependencies: [
-                "HotReloadingMacrosPlugin",
-                .product(name: "ImageFormats", package: "swift-image-formats"),
+                .target(
+                    name: "HotReloadingMacrosPlugin",
+                    condition: .when(platforms: [.iOS, .linux, .macOS])
+                ),
+                .product(
+                    name: "ImageFormats",
+                    package: "swift-image-formats",
+                    condition: .when(platforms: [.iOS, .linux, .macOS])
+                ),
+                .target(
+                    name: "Foundation",
+                    condition: .when(platforms: [.wasi])
+                ),
+                .product(
+                    name: "OpenCombineShim",
+                    package: "OpenCombine",
+                    condition: .when(platforms: [.wasi])
+                ),
             ],
             exclude: [
                 "Builders/ViewBuilder.swift.gyb",
@@ -140,7 +183,7 @@ let package = Package(
                 "Scenes/TupleScene.swift.gyb",
             ],
             swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
+                .defaultIsolation(MainActor.self)
             ]
         ),
         .testTarget(
@@ -155,7 +198,7 @@ let package = Package(
             dependencies: [
                 .target(
                     name: defaultBackend,
-                    condition: .when(platforms: [.linux, .macOS, .windows])
+                    condition: .when(platforms: [.linux, .macOS, .windows, .wasi])
                 ),
                 // Non-desktop platforms need to be handled separately:
                 // Only one backend is supported, and `#if` won't work because it's evaluated
@@ -164,16 +207,31 @@ let package = Package(
                     name: "UIKitBackend",
                     condition: .when(platforms: [.iOS, .tvOS, .macCatalyst, .visionOS])
                 ),
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
             ]
         ),
-        .target(name: "AppKitBackend", dependencies: ["SwiftCrossUI"]),
+        .target(
+            name: "AppKitBackend",
+            dependencies: ["SwiftCrossUI"],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
+        ),
         .target(
             name: "GtkBackend",
-            dependencies: ["SwiftCrossUI", "Gtk", "CGtk"]
+            dependencies: ["SwiftCrossUI", "Gtk", "CGtk"],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
         ),
         .target(
             name: "Gtk3Backend",
-            dependencies: ["SwiftCrossUI", "Gtk3", "CGtk3"]
+            dependencies: ["SwiftCrossUI", "Gtk3", "CGtk3"],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
         ),
         .systemLibrary(
             name: "CGtk",
@@ -237,7 +295,13 @@ let package = Package(
             ],
             swiftSettings: swiftSettings
         ),
-        .target(name: "UIKitBackend", dependencies: ["SwiftCrossUI"]),
+        .target(
+            name: "UIKitBackend",
+            dependencies: ["SwiftCrossUI"],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
+        ),
         .target(
             name: "WinUIBackend",
             dependencies: [
@@ -246,11 +310,34 @@ let package = Package(
                 .product(name: "WinUI", package: "swift-winui"),
                 .product(name: "WinAppSDK", package: "swift-windowsappsdk"),
                 .product(name: "WindowsFoundation", package: "swift-windowsfoundation"),
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
             ]
         ),
         .target(
             name: "WinUIInterop",
-            dependencies: []
+            dependencies: [],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
+        ),
+        .target(
+            name: "WasiBackend",
+            dependencies: [
+                "SwiftCrossUI",
+                .product(
+                    name: "JavaScriptKit",
+                    package: "JavaScriptKit",
+                ),
+                .product(
+                    name: "JavaScriptEventLoop",
+                    package: "JavaScriptKit",
+                ),
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ],
         ),
         // .target(
         //     name: "CursesBackend",

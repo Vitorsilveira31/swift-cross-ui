@@ -19,34 +19,38 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
         func chooseFile<Backend: AppBackend>(backend: Backend) async -> URL? {
             await withCheckedContinuation { continuation in
                 backend.runInMainThread {
-                    let window: Backend.Window? =
-                        if let window = self.window.value {
-                            .some(window as! Backend.Window)
-                        } else {
-                            nil
-                        }
-
-                    backend.showOpenDialog(
-                        fileDialogOptions: FileDialogOptions(
-                            title: title,
-                            defaultButtonLabel: defaultButtonLabel,
-                            allowedContentTypes: [],
-                            showHiddenFiles: showHiddenFiles,
-                            allowOtherContentTypes: true,
-                            initialDirectory: initialDirectory
-                        ),
-                        openDialogOptions: OpenDialogOptions(
-                            allowSelectingFiles: allowSelectingFiles,
-                            allowSelectingDirectories: allowSelectingDirectories,
-                            allowMultipleSelections: false
-                        ),
-                        window: window
-                    ) { result in
-                        switch result {
-                            case .success(let url):
-                                continuation.resume(returning: url[0])
-                            case .cancelled:
-                                continuation.resume(returning: nil)
+                    Task {
+                        await MainActor.run {
+                            let window: Backend.Window? =
+                            if let window = self.window.value {
+                                .some(window as! Backend.Window)
+                            } else {
+                                nil
+                            }
+                            
+                            backend.showOpenDialog(
+                                fileDialogOptions: FileDialogOptions(
+                                    title: title,
+                                    defaultButtonLabel: defaultButtonLabel,
+                                    allowedContentTypes: [],
+                                    showHiddenFiles: showHiddenFiles,
+                                    allowOtherContentTypes: true,
+                                    initialDirectory: initialDirectory
+                                ),
+                                openDialogOptions: OpenDialogOptions(
+                                    allowSelectingFiles: allowSelectingFiles,
+                                    allowSelectingDirectories: allowSelectingDirectories,
+                                    allowMultipleSelections: false
+                                ),
+                                window: window
+                            ) { result in
+                                switch result {
+                                case .success(let url):
+                                    continuation.resume(returning: url[0])
+                                case .cancelled:
+                                    continuation.resume(returning: nil)
+                                }
+                            }
                         }
                     }
                 }

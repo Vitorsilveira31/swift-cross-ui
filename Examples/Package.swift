@@ -15,12 +15,15 @@ let exampleDependencies: [Target.Dependency] = [
 
 let package = Package(
     name: "Examples",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13)],
+    platforms: [.macOS("15.4"), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13)],
     dependencies: [
         .package(name: "swift-cross-ui", path: ".."),
         .package(
             url: "https://github.com/stackotter/swift-bundler",
             revision: "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
+        ),
+        .package(
+            path: "../External/carton"
         ),
     ],
     targets: [
@@ -70,8 +73,12 @@ let package = Package(
             dependencies: exampleDependencies
         ),
         .executableTarget(
+            name: "WasiExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
             name: "WebViewExample",
             dependencies: exampleDependencies
-        )
+        ),
     ]
 )

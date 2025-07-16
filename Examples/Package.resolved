@@ -37,6 +37,15 @@
       }
     },
     {
+      "identity" : "javascriptkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftwasm/JavaScriptKit.git",
+      "state" : {
+        "revision" : "e854719ecf1f87fa5015fc8da88cb11832aa1fc8",
+        "version" : "0.31.2"
+      }
+    },
+    {
       "identity" : "jpeg",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/jpeg",
@@ -70,6 +79,15 @@
       "state" : {
         "revision" : "5f745a17b9a5c2a4283f17c2cde4517610ab5f99",
         "version" : "1.4.1"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
+      "state" : {
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
       }
     },
     {
@@ -198,6 +216,24 @@
       }
     },
     {
+      "identity" : "swift-foundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-foundation.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "4caa69d1f40412dd19fb582684af3930a454f653"
+      }
+    },
+    {
+      "identity" : "swift-foundation-icu",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-foundation-icu",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1323bae3d5399ebeda603069767e0651af7eea8a"
+      }
+    },
+    {
       "identity" : "swift-image-formats",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-image-formats",
@@ -222,15 +258,6 @@
       "state" : {
         "revision" : "9cb486020ebf03bfa5b5df985387a14a98744537",
         "version" : "1.6.1"
-      }
-    },
-    {
-      "identity" : "swift-macro-toolkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-macro-toolkit",
-      "state" : {
-        "revision" : "569627091e1fbb8745d691aeeb008e7247dedb7c",
-        "version" : "0.6.1"
       }
     },
     {
@@ -265,8 +292,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "0687f71944021d616d34d922343dcef086855920",
-        "version" : "600.0.1"
+        "branch" : "main",
+        "revision" : "7b1fcd6ced8269aa030e042b2e9d8938174ea237"
       }
     },
     {
@@ -344,6 +371,15 @@
       "state" : {
         "revision" : "1fe824b80d89201652e7eca7c9252269a1d85e25",
         "version" : "2.0.1"
+      }
+    },
+    {
+      "identity" : "wasmtransformer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftwasm/WasmTransformer",
+      "state" : {
+        "revision" : "d04b31f61b6f528a9a96ebfe4fa4275e333eba82",
+        "version" : "0.5.0"
       }
     },
     {

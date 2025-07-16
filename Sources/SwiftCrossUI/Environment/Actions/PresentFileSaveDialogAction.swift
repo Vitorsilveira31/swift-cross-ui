@@ -18,33 +18,37 @@ public struct PresentFileSaveDialogAction: Sendable {
         func chooseFile<Backend: AppBackend>(backend: Backend) async -> URL? {
             return await withCheckedContinuation { continuation in
                 backend.runInMainThread {
-                    let window: Backend.Window? =
-                        if let window = self.window.value {
-                            .some(window as! Backend.Window)
-                        } else {
-                            nil
-                        }
+                    Task {
+                        await MainActor.run {
+                            let window: Backend.Window? =
+                            if let window = self.window.value {
+                                .some(window as! Backend.Window)
+                            } else {
+                                nil
+                            }
 
-                    backend.showSaveDialog(
-                        fileDialogOptions: FileDialogOptions(
-                            title: title,
-                            defaultButtonLabel: defaultButtonLabel,
-                            allowedContentTypes: [],
-                            showHiddenFiles: showHiddenFiles,
-                            allowOtherContentTypes: true,
-                            initialDirectory: initialDirectory
-                        ),
-                        saveDialogOptions: SaveDialogOptions(
-                            nameFieldLabel: nameFieldLabel,
-                            defaultFileName: defaultFileName
-                        ),
-                        window: window
-                    ) { result in
-                        switch result {
-                            case .success(let url):
-                                continuation.resume(returning: url)
-                            case .cancelled:
-                                continuation.resume(returning: nil)
+                            backend.showSaveDialog(
+                                fileDialogOptions: FileDialogOptions(
+                                    title: title,
+                                    defaultButtonLabel: defaultButtonLabel,
+                                    allowedContentTypes: [],
+                                    showHiddenFiles: showHiddenFiles,
+                                    allowOtherContentTypes: true,
+                                    initialDirectory: initialDirectory
+                                ),
+                                saveDialogOptions: SaveDialogOptions(
+                                    nameFieldLabel: nameFieldLabel,
+                                    defaultFileName: defaultFileName
+                                ),
+                                window: window
+                            ) { result in
+                                switch result {
+                                case .success(let url):
+                                    continuation.resume(returning: url)
+                                case .cancelled:
+                                    continuation.resume(returning: nil)
+                                }
+                            }
                         }
                     }
                 }

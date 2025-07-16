@@ -17,25 +17,29 @@ public struct PresentAlertAction {
         func presentAlert<Backend: AppBackend>(backend: Backend) async -> Int {
             await withCheckedContinuation { continuation in
                 backend.runInMainThread {
-                    let alert = backend.createAlert()
-                    backend.updateAlert(
-                        alert,
-                        title: title,
-                        actionLabels: actions.map(\.label),
-                        environment: environment
-                    )
-                    let window: Backend.Window? =
-                        if let window = environment.window {
-                            .some(window as! Backend.Window)
-                        } else {
-                            nil
+                    Task {
+                        await MainActor.run {
+                            let alert = backend.createAlert()
+                            backend.updateAlert(
+                                alert,
+                                title: title,
+                                actionLabels: actions.map(\.label),
+                                environment: environment
+                            )
+                            let window: Backend.Window? =
+                            if let window = environment.window {
+                                .some(window as! Backend.Window)
+                            } else {
+                                nil
+                            }
+                            backend.showAlert(
+                                alert,
+                                window: window
+                            ) { actionIndex in
+                                actions[actionIndex].action()
+                                continuation.resume(returning: actionIndex)
+                            }
                         }
-                    backend.showAlert(
-                        alert,
-                        window: window
-                    ) { actionIndex in
-                        actions[actionIndex].action()
-                        continuation.resume(returning: actionIndex)
                     }
                 }
             }

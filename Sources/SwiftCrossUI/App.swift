@@ -33,7 +33,7 @@ public var _forceRefresh: () -> Void = {}
 private var swiftBundlerAppMetadata: AppMetadata?
 
 /// An error encountered when parsing Swift Bundler metadata.
-private enum SwiftBundlerMetadataError: LocalizedError {
+nonisolated private enum SwiftBundlerMetadataError: LocalizedError {
     case jsonNotDictionary(String)
     case missingAppIdentifier
     case missingAppVersion
@@ -62,11 +62,15 @@ extension App {
 
         let app = Self()
         let _app = _App(app)
-        _forceRefresh = {
-            app.backend.runInMainThread {
-                _app.forceRefresh()
-            }
-        }
+        // _forceRefresh = {
+        //     app.backend.runInMainThread {
+        //         Task {
+        //             await MainActor.run {
+        //                 _app.forceRefresh()
+        //             }
+        //         }
+        //     }
+        // }
         _app.run()
     }
 

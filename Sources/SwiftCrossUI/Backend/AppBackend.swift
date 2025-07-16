@@ -40,7 +40,6 @@ import Foundation
 /// code between the `create` and `update` methods of the various widgets
 /// (since the `update` method is always called between calling `create`
 /// and actually displaying the widget anyway).
-@MainActor
 public protocol AppBackend: Sendable {
     associatedtype Window
     associatedtype Widget
@@ -120,9 +119,7 @@ public protocol AppBackend: Sendable {
     /// window has not yet been created, which is essential in Gtk), so the
     /// setup function is passed to `Gtk` as a callback to run once the main
     /// run loop starts.
-    func runMainLoop(
-        _ callback: @escaping @MainActor () -> Void
-    )
+    func runMainLoop(_ callback: @Sendable @escaping () -> Void)
     /// Creates a new window. For some backends it may make sense for this
     /// method to return the application's root window the first time its
     /// called, and only create new windows on subsequent invocations.
@@ -175,7 +172,7 @@ public protocol AppBackend: Sendable {
     /// Runs an action in the app's main thread if required to perform UI updates
     /// by the backend. Predominantly used by ``Publisher`` to publish changes to a thread
     /// compatible with dispatching UI updates. Can be synchronous or asynchronous (for now).
-    nonisolated func runInMainThread(action: @escaping @MainActor () -> Void)
+    nonisolated func runInMainThread(action: @Sendable @escaping () -> Void)
 
     /// Computes the root environment for an app (e.g. by checking the system's current
     /// theme). May fall back on the provided defaults where reasonable.
@@ -215,7 +212,7 @@ public protocol AppBackend: Sendable {
 
     /// Sets the handler for URLs directed to the application (e.g. URLs
     /// associated with a custom URL scheme).
-    func setIncomingURLHandler(to action: @escaping (URL) -> Void)
+    func setIncomingURLHandler(to action: @Sendable @escaping (URL) -> Void)
 
     /// Opens an external URL in the system browser or app registered for the
     /// URL's protocol.
@@ -712,7 +709,8 @@ extension AppBackend {
     /// Used by placeholder implementations of backend methods.
     private func todo(_ function: String = #function) -> Never {
         print("\(type(of: self)): \(function) not implemented")
-        Foundation.exit(1)
+        // Foundation.exit(1)
+        fatalError()
     }
 
     // MARK: System

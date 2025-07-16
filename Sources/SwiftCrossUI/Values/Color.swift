@@ -10,6 +10,7 @@ public struct Color: Sendable {
     public var alpha: Float
 
     /// Creates a color from its components with values between 0 and 1.
+    @MainActor
     public init(
         _ red: Float,
         _ green: Float,

@@ -204,8 +204,8 @@ final class ViewRepresentingWidget<Representable: UIViewRepresentable>: BaseView
     }
 
     deinit {
-        if let context {
-            Representable.dismantleUIView(subview, coordinator: context.coordinator)
-        }
+//        if let context {
+//            Representable.dismantleUIView(subview, coordinator: context.coordinator)
+//        }
     }
 }

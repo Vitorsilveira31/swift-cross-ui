@@ -1,6 +1,15 @@
 {
-  "originHash" : "589b3dd67c6c4bf002ac0e661cdc5f048304c975897d3542f1623910c0b856d2",
+  "originHash" : "9827e301c57449d5758dfbae9539e26504da44732a3a3683b066d2567cc784b0",
   "pins" : [
+    {
+      "identity" : "javascriptkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftwasm/JavaScriptKit.git",
+      "state" : {
+        "revision" : "e854719ecf1f87fa5015fc8da88cb11832aa1fc8",
+        "version" : "0.31.2"
+      }
+    },
     {
       "identity" : "jpeg",
       "kind" : "remoteSourceControl",
@@ -26,6 +35,24 @@
       "state" : {
         "revision" : "5f745a17b9a5c2a4283f17c2cde4517610ab5f99",
         "version" : "1.4.1"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
+      "state" : {
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "c1805596154bb3a265fd91b8ac0c4433b4348fb0",
+        "version" : "1.2.0"
       }
     },
     {
@@ -56,6 +83,24 @@
       }
     },
     {
+      "identity" : "swift-foundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-foundation.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "64fff9d369a4491ad33b34c554a9d527b4a0727c"
+      }
+    },
+    {
+      "identity" : "swift-foundation-icu",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-foundation-icu",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1323bae3d5399ebeda603069767e0651af7eea8a"
+      }
+    },
+    {
       "identity" : "swift-image-formats",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-image-formats",
@@ -65,21 +110,12 @@
       }
     },
     {
-      "identity" : "swift-macro-toolkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-macro-toolkit",
-      "state" : {
-        "revision" : "e706aa98bc28f82677923f7b8f560bba6f90fac2",
-        "version" : "0.6.0"
-      }
-    },
-    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "0687f71944021d616d34d922343dcef086855920",
-        "version" : "600.0.1"
+        "branch" : "main",
+        "revision" : "638901a1570c7a28ffcbbdba6d0b33d3919ee669"
       }
     },
     {
