@@ -22,9 +22,6 @@ let package = Package(
             url: "https://github.com/stackotter/swift-bundler",
             revision: "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
         ),
-        .package(
-            path: "../External/carton"
-        ),
     ],
     targets: [
         .executableTarget(

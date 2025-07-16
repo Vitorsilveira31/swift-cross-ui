@@ -374,15 +374,6 @@
       }
     },
     {
-      "identity" : "wasmtransformer",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftwasm/WasmTransformer",
-      "state" : {
-        "revision" : "d04b31f61b6f528a9a96ebfe4fa4275e333eba82",
-        "version" : "0.5.0"
-      }
-    },
-    {
       "identity" : "xcodegen",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/yonaskolb/XcodeGen",
