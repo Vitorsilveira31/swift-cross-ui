@@ -22,6 +22,10 @@ let package = Package(
             url: "https://github.com/stackotter/swift-bundler",
             revision: "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
         ),
+        .package(
+            url: "https://github.com/swiftwasm/JavaScriptKit.git",
+            from: "0.31.1"
+        ),
     ],
     targets: [
         .executableTarget(
@@ -70,8 +74,17 @@ let package = Package(
             dependencies: exampleDependencies
         ),
         .executableTarget(
-            name: "WasiExample",
-            dependencies: exampleDependencies
+            name: "WASMExample",
+            dependencies: exampleDependencies + [
+                .product(
+                    name: "JavaScriptKit",
+                    package: "JavaScriptKit",
+                ),
+                .product(
+                    name: "JavaScriptEventLoop",
+                    package: "JavaScriptKit",
+                ),
+            ]
         ),
         .executableTarget(
             name: "WebViewExample",
