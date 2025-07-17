@@ -2,13 +2,13 @@ import SwiftCrossUI
 import UIKit
 
 public final class UIKitBackend: AppBackend {
-    @MainActor static var onBecomeActive: (() -> Void)?
-    @MainActor static var onReceiveURL: ((URL) -> Void)?
-    @MainActor static var queuedURLs: [URL] = []
+    static var onBecomeActive: (() -> Void)?
+    static var onReceiveURL: ((URL) -> Void)?
+    static var queuedURLs: [URL] = []
 
     /// The first window to get created.
-    @MainActor static var mainWindow: UIWindow?
-    @MainActor static var hasReturnedAWindow = false
+    static var mainWindow: UIWindow?
+    static var hasReturnedAWindow = false
 
     public let scrollBarWidth = 0
     public let defaultPaddingAmount = 15
@@ -42,7 +42,7 @@ public final class UIKitBackend: AppBackend {
         }
     }
 
-    @MainActor var onTraitCollectionChange: (() -> Void)?
+    var onTraitCollectionChange: (() -> Void)?
 
     private let appDelegateClass: ApplicationDelegate.Type
 

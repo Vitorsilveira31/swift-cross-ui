@@ -11,7 +11,7 @@ public struct NavigationPath {
     private class Storage {
         /// An entry that will be decoded next time it is used by a ``NavigationStack`` (we need to
         /// wait until we know what concrete entry types are available).
-        struct EncodedEntry: @MainActor Codable {
+        struct EncodedEntry: Codable {
             var type: String
             var value: Data
         }
@@ -114,7 +114,7 @@ public struct NavigationPath {
     }
 }
 
-extension NavigationPath: @MainActor Codable {
+extension NavigationPath: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let entries = try container.decode([Storage.EncodedEntry].self)

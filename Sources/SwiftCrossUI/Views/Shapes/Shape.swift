@@ -61,7 +61,6 @@ extension Shape {
         )
     }
 
-    @MainActor
     public func children<Backend: AppBackend>(
         backend _: Backend,
         snapshots _: [ViewGraphSnapshotter.NodeSnapshot]?,
@@ -70,7 +69,6 @@ extension Shape {
         ShapeStorage()
     }
 
-    @MainActor
     public func asWidget<Backend: AppBackend>(
         _ children: any ViewGraphNodeChildren, backend: Backend
     ) -> Backend.Widget {
@@ -81,7 +79,6 @@ extension Shape {
         return container
     }
 
-    @MainActor
     public func update<Backend: AppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,

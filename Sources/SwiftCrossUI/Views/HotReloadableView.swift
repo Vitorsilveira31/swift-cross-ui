@@ -41,7 +41,7 @@ public struct HotReloadableView: TypeSafeView {
         _ children: HotReloadableViewChildren,
         backend: Backend
     ) -> Backend.Widget {
-        backend.createContainer()
+        return backend.createContainer()
     }
 
     /// Attempts to update the child. If the initial update succeeds then the child's concrete type

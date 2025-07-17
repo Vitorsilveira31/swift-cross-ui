@@ -1,0 +1,52 @@
+diff --git a/Sources/DOM/Generated.swift b/Sources/DOM/Generated.swift
+index 9fa75ba..0339568 100644
+--- a/Sources/DOM/Generated.swift
++++ b/Sources/DOM/Generated.swift
+@@ -1094,6 +1094,17 @@ public class BeforeUnloadEvent: Event {
+ 
+     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+ 
++    @available(*, unavailable)
++    override public var returnValue: Bool {
++        get { !self.returnValueAsString.isEmpty }
++        set {}
++    }
++
++    // renamed because `String` is not compatible with `Bool`
++    @inlinable public var returnValueAsString: String {
++        get { self.jsObject[Strings.returnValue].string! }
++        set { self.jsObject[Strings.returnValue] = .string(newValue) }
++    }
+ }
+ 
+ public enum BitrateMode: JSString, JSValueCompatible {
+@@ -24231,14 +24242,6 @@ public enum CanvasImageSource: JSValueCompatible, Any_CanvasImageSource {
+         let val: CanvasImageSource = .htmlOrSVGImageElement(htmlOrSVGImageElement)
+         self = val
+     }
+-    public init(_ htmlImageElement: HTMLImageElement) {
+-        let val: HTMLOrSVGImageElement = .htmlImageElement(htmlImageElement)
+-        self = .init(val)
+-    }
+-    public init(_ svgImageElement: SVGImageElement) {
+-        let val: HTMLOrSVGImageElement = .svgImageElement(svgImageElement)
+-        self = .init(val)
+-    }
+     public init(_ htmlVideoElement: HTMLVideoElement) {
+         let val: CanvasImageSource = .htmlVideoElement(htmlVideoElement)
+         self = val
+@@ -25289,14 +25292,6 @@ public enum ImageBitmapSource: JSValueCompatible, Any_ImageBitmapSource {
+         let val: CanvasImageSource = .htmlOrSVGImageElement(htmlOrSVGImageElement)
+         self = .init(val)
+     }
+-    public init(_ htmlImageElement: HTMLImageElement) {
+-        let val: HTMLOrSVGImageElement = .htmlImageElement(htmlImageElement)
+-        self = .init(val)
+-    }
+-    public init(_ svgImageElement: SVGImageElement) {
+-        let val: HTMLOrSVGImageElement = .svgImageElement(svgImageElement)
+-        self = .init(val)
+-    }
+     public init(_ htmlVideoElement: HTMLVideoElement) {
+         let val: CanvasImageSource = .htmlVideoElement(htmlVideoElement)
+         self = .init(val)

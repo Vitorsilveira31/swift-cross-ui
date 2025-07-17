@@ -1,6 +1,6 @@
 /// Type to indicate the root of the NavigationStack. This is internal to prevent root accidentally showing instead
 /// of a detail view.
-struct NavigationStackRootPath: @MainActor Codable {}
+struct NavigationStackRootPath: Codable {}
 
 /// A view that displays a root view and enables you to present additional views over the root view.
 ///

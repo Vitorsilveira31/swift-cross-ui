@@ -1,0 +1,19 @@
+diff --git a/Sources/WebAudio/Generated.swift b/Sources/WebAudio/Generated.swift
+index fff1563..d672d8c 100644
+--- a/Sources/WebAudio/Generated.swift
++++ b/Sources/WebAudio/Generated.swift
+@@ -535,11 +535,11 @@ public class AudioNode: EventTarget {
+ 
+     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+ 
+-    @inlinable final public func connect(
+-        destinationNode: AudioNode,
++    @discardableResult @inlinable public final func connect<NodeType: AudioNode>(
++        destinationNode: NodeType,
+         output: UInt32? = nil,
+         input: UInt32? = nil
+-    ) -> AudioNode {
++    ) -> NodeType {
+         let this = jsObject
+         return this[Strings.connect].function!(
+             this: this,

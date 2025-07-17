@@ -730,7 +730,7 @@ extension AppBackend {
     }
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
-        todo()
+
     }
 
     // MARK: Containers

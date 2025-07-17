@@ -15,11 +15,9 @@ public protocol ToolbarItem {
     associatedtype ItemType: UIBarButtonItem
 
     /// Convert the item to an instance of `ItemType`.
-    @MainActor
     func createBarButtonItem() -> ItemType
 
     /// Update the item with new information (e.g. updated bindings). May be a no-op.
-    @MainActor
     func updateBarButtonItem(_ item: inout ItemType)
 }
 

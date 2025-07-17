@@ -1814,7 +1814,6 @@
     }
 
     extension Color {
-        @MainActor
         init(_ nsColor: NSColor) {
             guard let resolvedNSColor = nsColor.usingColorSpace(.deviceRGB) else {
                 print("error: Failed to convert NSColor to RGB")
@@ -1829,7 +1828,6 @@
             )
         }
 
-        @MainActor
         var nsColor: NSColor {
             NSColor(
                 calibratedRed: CGFloat(red),
@@ -1904,7 +1902,7 @@
         }
     }
 
-    class NSObservableTextView: NSTextView, @MainActor NSTextViewDelegate {
+    class NSObservableTextView: NSTextView, NSTextViewDelegate {
         func textDidChange(_ notification: Notification) {
             onEdit?(self)
         }
@@ -1917,7 +1915,6 @@
         typealias ActionClosure = ((NSControl) -> Void)
         typealias EditClosure = ((NSTextField) -> Void)
 
-        @MainActor
         struct AssociatedKeys {
             static let onActionClosure = ObjectAssociation<ActionClosure>()
             static let onEditClosure = ObjectAssociation<EditClosure>()

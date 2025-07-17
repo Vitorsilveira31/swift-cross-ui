@@ -84,11 +84,9 @@
         }
     }
 
-    import Foundation
-
     public enum JSONSerialization {
         /// Mock replacement for `JSONSerialization.jsonObject(with:)`
-        public static func jsonObject(with data: Data, options opt: JSONReadingOptions = []) throws
+        public static func jsonObject(with data: Any, options opt: JSONReadingOptions = []) throws
             -> Any
         {
             // ⚠️ IMPORTANT:
@@ -174,6 +172,14 @@
                 // fallback simples
                 self = "\(value)"
             }
+        }
+    }
+
+    public typealias Data = FoundationEssentials.Data
+
+    extension Data {
+        public init?(contentsOf url: FoundationEssentials.URL) {
+            return nil
         }
     }
 #endif

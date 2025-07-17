@@ -1,0 +1,38 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  macos_test:
+    strategy:
+      matrix:
+        include:
+          - os: macos-11
+            xcode: Xcode_13.2.1
+          - os: macos-12
+            xcode: Xcode_13.4.1
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if codegen output is stale
+        run: |
+          cd parse-idl && npm install && cd ..
+          swift run WebIDLToSwift
+          git diff --exit-code *
+      - name: Run the test suite on macOS
+        shell: bash
+        run: |
+          set -ex
+          sudo xcode-select --switch /Applications/${{ matrix.xcode }}.app/Contents/Developer/
+
+          brew install swiftwasm/tap/carton
+
+          carton bundle --product WebAPIKitDemo
+          carton test --environment defaultBrowser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

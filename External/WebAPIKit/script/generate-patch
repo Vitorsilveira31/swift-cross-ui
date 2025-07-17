@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# This script generates a patch file for a generated file.
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <module-name>"
+    exit 1
+fi
+
+FILE=Sources/$1/Generated.swift
+
+cp $FILE $FILE.modified
+swift run WebIDLToSwift --no-patch
+
+cat <<EOF > "Patches/$1.patch"
+--- a/$FILE
++++ b/$FILE
+EOF
+
+git diff --no-ext-diff --no-index $FILE $FILE.modified | tail -n +5 | sed 's/[[:space:]]*$//' >> "Patches/$1.patch"
+
+swift run WebIDLToSwift
+rm $FILE.modified

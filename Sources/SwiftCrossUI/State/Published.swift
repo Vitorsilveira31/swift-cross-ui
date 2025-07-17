@@ -111,7 +111,7 @@ public final class Published<Value>: ObservableObject, PublishedMarkerProtocol {
     }
 }
 
-extension Published: @MainActor Codable where Value: Codable {
+extension Published: Codable where Value: Codable {
     public convenience init(from decoder: Decoder) throws {
         self.init(wrappedValue: try Value(from: decoder))
     }

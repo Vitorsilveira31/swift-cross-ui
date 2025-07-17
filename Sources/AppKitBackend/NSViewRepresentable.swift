@@ -16,7 +16,6 @@
         associatedtype Coordinator = Void
 
         /// Create the initial NSView instance.
-        @MainActor
         func makeNSView(context: NSViewRepresentableContext<Coordinator>) -> NSViewType
 
         /// Update the view with new values.
@@ -25,7 +24,6 @@
         ///   - context: The context, including the coordinator and potentially new
         ///     environment values.
         /// - Note: This may be called even when `context` has not changed.
-        @MainActor
         func updateNSView(
             _ nsView: NSViewType,
             context: NSViewRepresentableContext<Coordinator>
@@ -36,7 +34,6 @@
         /// The coordinator is used when the view needs to communicate changes to
         /// the rest of the view hierarchy (i.e. through bindings), and is often the
         /// view's delegate.
-        @MainActor
         func makeCoordinator() -> Coordinator
 
         /// Compute the view's size.
@@ -221,7 +218,6 @@
             }
         }
 
-        @MainActor
         deinit {
             if let context {
                 Representable.dismantleNSView(subview, coordinator: context.coordinator)

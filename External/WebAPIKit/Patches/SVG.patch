@@ -1,0 +1,15 @@
+diff --git a/Sources/SVG/Generated.swift b/Sources/SVG/Generated.swift
+index 176385b..bf8f1dd 100644
+--- a/Sources/SVG/Generated.swift
++++ b/Sources/SVG/Generated.swift
+@@ -524,7 +524,9 @@ public class SVGElement: Element, GlobalEventHandlers, SVGElementInstance, HTMLO
+ 
+     public required init(unsafelyWrapping jsObject: JSObject) { super.init(unsafelyWrapping: jsObject) }
+ 
+-    @inlinable public var className: SVGAnimatedString { jsObject[Strings.className].fromJSValue()! }
++    // Renamed because superclass has a `className` property of type `String`
++    // NOTE! Accessing `className` on an SVGElement will crash your app
++    @inlinable public var svgClassName: SVGAnimatedString { jsObject[Strings.className].fromJSValue()! }
+ 
+     @inlinable public var ownerSVGElement: SVGSVGElement? { jsObject[Strings.ownerSVGElement].fromJSValue() }
+ 

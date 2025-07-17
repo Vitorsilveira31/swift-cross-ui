@@ -52,7 +52,6 @@ extension Shape {
 }
 
 extension StyledShape {
-    @MainActor
     public func update<Backend: AppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,

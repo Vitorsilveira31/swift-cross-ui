@@ -220,7 +220,6 @@ public struct Font: Hashable, Sendable {
         var resolveTextStyle: @MainActor @Sendable (TextStyle) -> TextStyle.Resolved
     }
 
-    @MainActor
     package func resolve(in context: Context) -> Resolved {
         let emphasizedWeight: Weight
         var resolved: Resolved

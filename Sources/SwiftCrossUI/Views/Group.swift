@@ -31,7 +31,7 @@ public struct Group<Content: View>: View {
         backend: Backend,
         dryRun: Bool
     ) -> ViewUpdateResult {
-        LayoutSystem.updateStackLayout(
+        return LayoutSystem.updateStackLayout(
             container: widget,
             children: layoutableChildren(backend: backend, children: children),
             proposedSize: proposedSize,

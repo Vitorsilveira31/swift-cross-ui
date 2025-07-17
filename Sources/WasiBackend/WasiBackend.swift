@@ -1,3 +1,4 @@
+import DOM
 import Foundation
 import JavaScriptEventLoop
 import JavaScriptKit
@@ -12,17 +13,17 @@ extension App {
 }
 
 public final class WasiBackend: AppBackend {
-    public func resolveTextStyle(_ textStyle: SwiftCrossUI.Font.TextStyle)
-        -> SwiftCrossUI.Font.TextStyle.Resolved
+    public func resolveTextStyle(_ textStyle: Font.TextStyle)
+        -> Font.TextStyle.Resolved
     {
         textStyle.resolve(for: deviceClass)
     }
 
-    public typealias Window = JSValue
-    public typealias Widget = JSValue
-    public typealias Menu = JSValue
-    public typealias Alert = JSValue
-    public typealias Path = JSValue
+    public typealias Window = Element
+    public typealias Widget = Element
+    public typealias Menu = Element
+    public typealias Alert = Element
+    public typealias Path = Element
 
     public let defaultTableRowContentHeight = 20
     public let defaultTableCellVerticalPadding = 4
@@ -35,10 +36,9 @@ public final class WasiBackend: AppBackend {
 
     public var scrollBarWidth: Int = 10
 
-    private let document: JSObject?
+    private let document: Document = globalThis.document
 
     public init() {
-        document = JSObject.global.document.object
         JavaScriptEventLoop.installGlobalExecutor()
     }
 
@@ -47,7 +47,9 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createWindow(withDefaultSize defaultSize: SIMD2<Int>?) -> Window {
-        JSValue.null
+        let container = document.createElement(localName: "div")
+        container.className = "window"
+        return container
     }
 
     public func setTitle(ofWindow window: Window, to title: String) {
@@ -59,11 +61,18 @@ public final class WasiBackend: AppBackend {
     }
 
     public func setChild(ofWindow window: Window, to child: Widget) {
-        _ = document?.body.append(child)
+        if let body = document.body {
+            while let firstChild = body.firstChild {
+                _ = body.removeChild(child: firstChild)
+            }
+            _ = body.appendChild(node: child)
+        }
     }
 
     public func size(ofWindow window: Window) -> SIMD2<Int> {
-        SIMD2(100, 100)  // Placeholder, as WASI does not provide window size information
+        let width = Int(window.jsObject.innerWidth.number ?? 0.0)
+        let height = Int(window.jsObject.innerHeight.number ?? 0.0)
+        return SIMD2(width, height)
     }
 
     public func isWindowProgrammaticallyResizable(_ window: Window) -> Bool {
@@ -71,110 +80,132 @@ public final class WasiBackend: AppBackend {
     }
 
     public func setSize(ofWindow window: Window, to newSize: SIMD2<Int>) {
-
+        window.jsObject.style.width = "\(newSize.x)px".jsValue
+        window.jsObject.style.height = "\(newSize.y)px".jsValue
     }
 
     public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
-
+        window.jsObject.style.minWidth = "\(minimumSize.x)px".jsValue
+        window.jsObject.style.minHeight = "\(minimumSize.y)px".jsValue
     }
 
-    public func setResizeHandler(ofWindow window: Window, to action: @escaping (SIMD2<Int>) -> Void)
-    {
-
-    }
+    public func setResizeHandler(
+        ofWindow window: Window,
+        to action: @escaping (SIMD2<Int>) -> Void
+    ) {}
 
     public func show(window: Window) {
-
     }
 
     public func activate(window: Window) {
-
     }
 
     nonisolated public func runInMainThread(action: @escaping @Sendable () -> Void) {
         action()
     }
 
-    public func computeRootEnvironment(defaultEnvironment: SwiftCrossUI.EnvironmentValues)
-        -> SwiftCrossUI.EnvironmentValues
+    public func computeRootEnvironment(defaultEnvironment: EnvironmentValues)
+        -> EnvironmentValues
     {
-        return defaultEnvironment
+        defaultEnvironment
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
-
-    }
+    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {}
 
     public func computeWindowEnvironment(
-        window: Window, rootEnvironment: SwiftCrossUI.EnvironmentValues
-    ) -> SwiftCrossUI.EnvironmentValues {
-        return rootEnvironment
+        window: Window,
+        rootEnvironment: EnvironmentValues
+    ) -> EnvironmentValues {
+        rootEnvironment
     }
 
     public func setWindowEnvironmentChangeHandler(
-        of window: Window, to action: @escaping () -> Void
-    ) {
+        of window: Window,
+        to action: @escaping () -> Void
+    ) {}
 
-    }
-
-    public func show(widget: Widget) {
-
-    }
+    public func show(widget: Widget) {}
 
     public func tag(widget: Widget, as tag: String) {
-
+        widget.jsObject.className = "\(widget.jsObject.className) tag-\(tag)".lowercased().jsValue
     }
 
     public func createContainer() -> Widget {
-        guard let document else {
-            return JSValue.null
-        }
-        let container = document.createElement!("div")
+        let container = document.createElement(localName: "div")
+        container.className = "container"
         return container
     }
 
     public func removeAllChildren(of container: Widget) {
-
+        while true {
+            let lastChild = container.jsObject.lastChild
+            if lastChild.isNull || lastChild.isUndefined { break }
+            _ = container.jsObject.removeChild?(lastChild)
+        }
     }
 
     public func addChild(_ child: Widget, to container: Widget) {
-        container.object?.appendChild?(child)
+        _ = container.jsObject.appendChild?(child)
     }
 
     public func setPosition(ofChildAt index: Int, in container: Widget, to position: SIMD2<Int>) {
+        let children = container.jsObject.childNodes
+        guard let length = children.length.number, index < Int(length) else {
+            assertionFailure("Child index out of bounds")
+            return
+        }
+        guard let child = children[Int(index)].object else {
+            return
+        }
+        // Understand better how to handle centering
+        // if is the root container
+        if container.jsObject.parentNode.className == "" {
+            child.style.position = "absolute"
+            child.style.left = "50%".jsValue
+            child.style.top = "50%".jsValue
+            child.style.transform = "translate(-50%, -50%)".jsValue
 
+            return
+        }
+        child.style.position = "absolute"
+        child.style.left = "\(position.x)px".jsValue
+        child.style.top = "\(position.y)px".jsValue
     }
 
     public func removeChild(_ child: Widget, from container: Widget) {
-
+        _ = container.jsObject.removeChild?(child)
     }
 
     public func createColorableRectangle() -> Widget {
-        JSValue.null
+        let element = document.createElement(localName: "div")
+        element.className = "colorable-rectangle"
+        return element
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: SwiftCrossUI.Color) {
-
+    public func setColor(ofColorableRectangle widget: Widget, to color: Color) {
+        widget.jsObject.style.backgroundColor = color.cssString.jsValue
     }
 
     public func setCornerRadius(of widget: Widget, to radius: Int) {
-
+        widget.jsObject.style.borderRadius = "\(radius)px".jsValue
     }
 
     public func naturalSize(of widget: Widget) -> SIMD2<Int> {
-        SIMD2(100, 100)  // Placeholder, as WASI does not provide natural size information
+        let rect = widget.getBoundingClientRect()
+        return SIMD2(Int(rect.width.rounded()), Int(rect.height.rounded()))
     }
 
     public func setSize(of widget: Widget, to size: SIMD2<Int>) {
-
+        widget.jsObject.style.width = "\(size.x)px".jsValue
+        widget.jsObject.style.height = "\(size.y)px".jsValue
     }
 
     public func createScrollContainer(for child: Widget) -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateScrollContainer(
-        _ scrollView: Widget, environment: SwiftCrossUI.EnvironmentValues
+        _ scrollView: Widget, environment: EnvironmentValues
     ) {
 
     }
@@ -187,11 +218,11 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createSelectableListView() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
-    public func baseItemPadding(ofSelectableListView listView: Widget) -> SwiftCrossUI.EdgeInsets {
-        SwiftCrossUI.EdgeInsets(
+    public func baseItemPadding(ofSelectableListView listView: Widget) -> EdgeInsets {
+        EdgeInsets(
             top: 0,
             bottom: 0,
             leading: 0,
@@ -200,17 +231,21 @@ public final class WasiBackend: AppBackend {
     }
 
     public func minimumRowSize(ofSelectableListView listView: Widget) -> SIMD2<Int> {
-        SIMD2(100, 30)  // Placeholder, as WASI does not provide minimum row size information
+        let rect = listView.getBoundingClientRect()
+        return SIMD2(Int(rect.width.rounded()), Int(rect.height.rounded()))
     }
 
     public func setItems(
-        ofSelectableListView listView: Widget, to items: [Widget], withRowHeights rowHeights: [Int]
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Int]
     ) {
 
     }
 
     public func setSelectionHandler(
-        forSelectableListView listView: Widget, to action: @escaping (Int) -> Void
+        forSelectableListView listView: Widget,
+        to action: @escaping (Int) -> Void
     ) {
 
     }
@@ -220,7 +255,7 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createSplitView(leadingChild: Widget, trailingChild: Widget) -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func setResizeHandler(ofSplitView splitView: Widget, to action: @escaping () -> Void) {
@@ -228,7 +263,7 @@ public final class WasiBackend: AppBackend {
     }
 
     public func sidebarWidth(ofSplitView splitView: Widget) -> Int {
-        10
+        100
     }
 
     public func setSidebarWidthBounds(
@@ -238,40 +273,64 @@ public final class WasiBackend: AppBackend {
     }
 
     public func size(
-        of text: String, whenDisplayedIn widget: Widget, proposedFrame: SIMD2<Int>?,
-        environment: SwiftCrossUI.EnvironmentValues
+        of text: String,
+        whenDisplayedIn widget: Widget,
+        proposedFrame: SIMD2<Int>?,
+        environment: EnvironmentValues
     ) -> SIMD2<Int> {
-        return SIMD2(100, 20)
+        let temp = document.createElement(localName: "span")
+        temp.textContent = text
+
+        temp.jsObject.style.fontSize = "\(environment.resolvedFont.pointSize)px".jsValue
+        // temp.jsObject.style.fontFamily = environment.resolvedFont.family.jsValue
+        temp.jsObject.style.position = "absolute".jsValue
+        temp.jsObject.style.visibility = "hidden".jsValue
+        temp.jsObject.style.whiteSpace = "pre-wrap".jsValue
+
+        if let proposedFrame {
+            temp.jsObject.style.width = "\(proposedFrame.x)px".jsValue
+        } else {
+            temp.jsObject.style.whiteSpace = "nowrap".jsValue
+        }
+
+        _ = document.body?.appendChild(node: temp)
+
+        _ = temp.jsObject.offsetWidth
+
+        let rect = temp.getBoundingClientRect()
+        let width = temp.jsObject.scrollWidth.number ?? 0
+        let height = temp.jsObject.scrollHeight.number ?? 0
+        let result = SIMD2(Int(width), Int(height))
+
+        temp.remove()
+        return result
     }
 
     public func createTextView() -> Widget {
-        guard let document else {
-            return JSValue.null
-        }
-        let text = document.createElement!("h1")
-        text.textContent = "Hello, World!"
+        let text = document.createElement(localName: "text")
+        text.className = "text-view"
         return text
     }
 
     public func updateTextView(
-        _ textView: Widget, content: String, environment: SwiftCrossUI.EnvironmentValues
+        _ textView: Widget, content: String, environment: EnvironmentValues
     ) {
-        textView.object?.textContent = content as! JSValue
+        textView.textContent = content
     }
 
     public func createImageView() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateImageView(
         _ imageView: Widget, rgbaData: [UInt8], width: Int, height: Int, targetWidth: Int,
-        targetHeight: Int, dataHasChanged: Bool, environment: SwiftCrossUI.EnvironmentValues
+        targetHeight: Int, dataHasChanged: Bool, environment: EnvironmentValues
     ) {
 
     }
 
     public func createTable() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func setRowCount(ofTable table: Widget, to rows: Int) {
@@ -279,7 +338,7 @@ public final class WasiBackend: AppBackend {
     }
 
     public func setColumnLabels(
-        ofTable table: Widget, to labels: [String], environment: SwiftCrossUI.EnvironmentValues
+        ofTable table: Widget, to labels: [String], environment: EnvironmentValues
     ) {
 
     }
@@ -291,28 +350,41 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createButton() -> Widget {
-        JSValue.null
+        let button = document.createElement(localName: "button")
+        button.className = "button"
+        return button
     }
 
     public func updateButton(
-        _ button: Widget, label: String, environment: SwiftCrossUI.EnvironmentValues,
+        _ button: Widget, label: String, environment: EnvironmentValues,
         action: @escaping () -> Void
     ) {
-
+        button.textContent = label
+        button.addEventListener(
+            type: "click",
+            callback: { _ in
+                action()
+            }
+        )
     }
 
     public func updateButton(
-        _ button: Widget, label: String, menu: Menu, environment: SwiftCrossUI.EnvironmentValues
+        _ button: Widget,
+        label: String,
+        menu: Menu,
+        environment: EnvironmentValues
     ) {
 
     }
 
     public func createToggle() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateToggle(
-        _ toggle: Widget, label: String, environment: SwiftCrossUI.EnvironmentValues,
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
 
@@ -323,11 +395,12 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createSwitch() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateSwitch(
-        _ switchWidget: Widget, environment: SwiftCrossUI.EnvironmentValues,
+        _ switchWidget: Widget,
+        environment: EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
 
@@ -338,11 +411,11 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createCheckbox() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateCheckbox(
-        _ checkboxWidget: Widget, environment: SwiftCrossUI.EnvironmentValues,
+        _ checkboxWidget: Widget, environment: EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
 
@@ -353,12 +426,12 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createSlider() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateSlider(
         _ slider: Widget, minimum: Double, maximum: Double, decimalPlaces: Int,
-        environment: SwiftCrossUI.EnvironmentValues, onChange: @escaping (Double) -> Void
+        environment: EnvironmentValues, onChange: @escaping (Double) -> Void
     ) {
 
     }
@@ -368,12 +441,15 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createTextField() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateTextField(
-        _ textField: Widget, placeholder: String, environment: SwiftCrossUI.EnvironmentValues,
-        onChange: @escaping (String) -> Void, onSubmit: @escaping () -> Void
+        _ textField: Widget,
+        placeholder: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
     ) {
 
     }
@@ -387,11 +463,12 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createTextEditor() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateTextEditor(
-        _ textEditor: Widget, environment: SwiftCrossUI.EnvironmentValues,
+        _ textEditor: Widget,
+        environment: EnvironmentValues,
         onChange: @escaping (String) -> Void
     ) {
 
@@ -406,11 +483,13 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createPicker() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updatePicker(
-        _ picker: Widget, options: [String], environment: SwiftCrossUI.EnvironmentValues,
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
         onChange: @escaping (Int?) -> Void
     ) {
 
@@ -421,50 +500,58 @@ public final class WasiBackend: AppBackend {
     }
 
     public func createProgressSpinner() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func createProgressBar() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateProgressBar(
-        _ widget: Widget, progressFraction: Double?, environment: SwiftCrossUI.EnvironmentValues
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: EnvironmentValues
     ) {
 
     }
 
     public func createPopoverMenu() -> Menu {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updatePopoverMenu(
-        _ menu: Menu, content: SwiftCrossUI.ResolvedMenu,
-        environment: SwiftCrossUI.EnvironmentValues
+        _ menu: Menu, content: ResolvedMenu,
+        environment: EnvironmentValues
     ) {
 
     }
 
     public func showPopoverMenu(
-        _ menu: Menu, at position: SIMD2<Int>, relativeTo widget: Widget,
+        _ menu: Menu,
+        at position: SIMD2<Int>,
+        relativeTo widget: Widget,
         closeHandler handleClose: @escaping () -> Void
     ) {
 
     }
 
     public func createAlert() -> Alert {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateAlert(
-        _ alert: Alert, title: String, actionLabels: [String],
-        environment: SwiftCrossUI.EnvironmentValues
+        _ alert: Alert,
+        title: String,
+        actionLabels: [String],
+        environment: EnvironmentValues
     ) {
 
     }
 
     public func showAlert(
-        _ alert: Alert, window: Window?, responseHandler handleResponse: @escaping (Int) -> Void
+        _ alert: Alert,
+        window: Window?,
+        responseHandler handleResponse: @escaping (Int) -> Void
     ) {
 
     }
@@ -473,46 +560,52 @@ public final class WasiBackend: AppBackend {
 
     }
 
-    public func createTapGestureTarget(wrapping child: Widget, gesture: SwiftCrossUI.TapGesture)
+    public func createTapGestureTarget(wrapping child: Widget, gesture: TapGesture)
         -> Widget
     {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updateTapGestureTarget(
-        _ tapGestureTarget: Widget, gesture: SwiftCrossUI.TapGesture,
-        environment: SwiftCrossUI.EnvironmentValues, action: @escaping () -> Void
+        _ tapGestureTarget: Widget, gesture: TapGesture,
+        environment: EnvironmentValues, action: @escaping () -> Void
     ) {
 
     }
 
     public func createPathWidget() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
     public func createPath() -> Path {
-        JSValue.null
+        HTMLElement()
     }
 
     public func updatePath(
-        _ path: Path, _ source: SwiftCrossUI.Path, bounds: SwiftCrossUI.Path.Rect,
-        pointsChanged: Bool, environment: SwiftCrossUI.EnvironmentValues
+        _ path: Path,
+        _ source: Path,
+        bounds: SwiftCrossUI.Path.Rect,
+        pointsChanged: Bool,
+        environment: EnvironmentValues
     ) {
 
     }
 
     public func renderPath(
-        _ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?
+        _ path: Path,
+        container: Widget,
+        strokeColor: Color,
+        fillColor: Color,
+        overrideStrokeStyle: StrokeStyle?
     ) {
 
     }
 
     public func createWebView() -> Widget {
-        JSValue.null
+        HTMLElement()
     }
 
-    public func setApplicationMenu(_ submenus: [SwiftCrossUI.ResolvedMenu.Submenu]) {
+    public func setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
 
     }
 }

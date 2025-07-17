@@ -60,7 +60,7 @@ extension EitherView: TypeSafeView {
         switch storage {
             case .a(let a):
                 switch children.node {
-                    case let .a(nodeA):
+                    case .a(let nodeA):
                         result = nodeA.update(
                             with: a,
                             proposedSize: proposedSize,
@@ -85,7 +85,7 @@ extension EitherView: TypeSafeView {
                 }
             case .b(let b):
                 switch children.node {
-                    case let .b(nodeB):
+                    case .b(let nodeB):
                         result = nodeB.update(
                             with: b,
                             proposedSize: proposedSize,
@@ -129,7 +129,6 @@ extension EitherView: TypeSafeView {
 /// Uses an `enum` to store a view graph node for one of two possible child view types.
 class EitherViewChildren<A: View, B: View>: ViewGraphNodeChildren {
     /// A view graph node that wraps one of two possible child view types.
-    @MainActor
     enum EitherNode {
         case a(AnyViewGraphNode<A>)
         case b(AnyViewGraphNode<B>)
@@ -137,18 +136,18 @@ class EitherViewChildren<A: View, B: View>: ViewGraphNodeChildren {
         /// The widget corresponding to the currently displayed child view.
         var widget: AnyWidget {
             switch self {
-                case let .a(node):
+                case .a(let node):
                     return node.widget
-                case let .b(node):
+                case .b(let node):
                     return node.widget
             }
         }
 
         var erasedNode: ErasedViewGraphNode {
             switch self {
-                case let .a(node):
+                case .a(let node):
                     return ErasedViewGraphNode(wrapping: node)
-                case let .b(node):
+                case .b(let node):
                     return ErasedViewGraphNode(wrapping: node)
             }
         }

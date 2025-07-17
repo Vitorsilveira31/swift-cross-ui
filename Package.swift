@@ -136,6 +136,9 @@ let package = Package(
             url: "https://github.com/swiftwasm/JavaScriptKit.git",
             from: "0.31.1"
         ),
+        .package(
+            path: "./External/WebAPIKit"
+        ),
     ],
     targets: [
         .target(
@@ -333,6 +336,10 @@ let package = Package(
                 .product(
                     name: "JavaScriptEventLoop",
                     package: "JavaScriptKit",
+                ),
+                .product(
+                    name: "DOM",
+                    package: "WebAPIKit"
                 ),
             ],
             swiftSettings: [

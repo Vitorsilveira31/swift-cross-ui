@@ -1,7 +1,6 @@
 import Foundation
 
 /// An application.
-@MainActor
 public protocol App {
     /// The backend used to render the app.
     associatedtype Backend: AppBackend
@@ -25,11 +24,9 @@ public protocol App {
 
 /// Force refresh the entire scene graph. Used by hot reloading. If you need to do
 /// this in your own code then something has gone very wrong...
-@MainActor
 public var _forceRefresh: () -> Void = {}
 
 /// Metadata embedded by Swift Bundler if present. Loaded at app start up.
-@MainActor
 private var swiftBundlerAppMetadata: AppMetadata?
 
 /// An error encountered when parsing Swift Bundler metadata.
@@ -62,15 +59,15 @@ extension App {
 
         let app = Self()
         let _app = _App(app)
-        // _forceRefresh = {
-        //     app.backend.runInMainThread {
-        //         Task {
-        //             await MainActor.run {
-        //                 _app.forceRefresh()
-        //             }
-        //         }
-        //     }
-        // }
+        _forceRefresh = {
+            app.backend.runInMainThread {
+                Task {
+                    await MainActor.run {
+                        _app.forceRefresh()
+                    }
+                }
+            }
+        }
         _app.run()
     }
 

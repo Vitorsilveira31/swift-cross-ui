@@ -33,7 +33,7 @@ public struct EmptyView: View, Sendable {
         _ children: any ViewGraphNodeChildren,
         backend: Backend
     ) -> Backend.Widget {
-        backend.createContainer()
+        return backend.createContainer()
     }
 
     public func update<Backend: AppBackend>(
